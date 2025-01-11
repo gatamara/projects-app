@@ -1,12 +1,12 @@
 <template>
   <dialog class="modal" :open="open">
     <div class="modal-box">
-      <h3 class="text-lg font-bold">Hello!</h3>
-      <p class="py-4">Press ESC key or click the button below to close</p>
+      <h3 class="text-lg font-bold">{{ title }}</h3>
+      <p v-if="subTitle" class="py-4">{{ subTitle }}</p>
 
       <div class="modal-action flex flex-col">
         <form method="dialog" @submit.prevent="submitValue">
-          <input ref="inputRef" type="text" placeholder="Nombre del proyecto"
+          <input ref="inputRef" type="text" :placeholder="placeholder ?? 'Ingrese un valor'"
             class="input input-bordered input-primary w-full flex-1" v-model="inputValue">
           <div class="flex justify-end mt-5">
             <button class="btn mr-4" @click="$emit('close')">Close</button>
@@ -23,12 +23,15 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 interface Props {
   open: boolean
+  placeholder?: string
+  title: string
+  subTitle?: string
 }
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const emits = defineEmits<{
   close: [void]
@@ -39,17 +42,20 @@ const emits = defineEmits<{
 const inputValue = ref('')
 const inputRef = ref<HTMLInputElement | null>(null)
 
+//que agregue el foco en el input inmediatamente se abre el modal
+watch(props, ({ open }) => {
+  if (open) {
+    inputRef.value?.focus()
+  }
+})
+
 const submitValue = () => {
-  console.log({ value: inputValue.value });
-
   if (!inputValue.value) {
-
     inputRef.value?.focus()
     return
   }
   emits('value', inputValue.value.trim())
   emits('close')
-
   inputValue.value = ''
 }
 
